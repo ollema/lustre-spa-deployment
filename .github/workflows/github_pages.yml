@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -7,11 +7,13 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to Cloudflare Pages
+    name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
     permissions:
       contents: read
       deployments: write
+      pages: write
+      id-token: write
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -28,11 +30,14 @@ jobs:
       - name: Copy output to dist
         run: |
           mkdir -p dist
-          cp index.cloudflare.html dist/index.html
+          cp index.github.html dist/index.html
           cp -r priv dist/priv
-      - name: Deploy with Wrangler
-        uses: cloudflare/wrangler-action@v3
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name lustre-spa-deployment
+          path: "dist"
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
